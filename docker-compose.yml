@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  annasystems:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: annasystems-app
+    ports:
+      - "3000:3000"
+    volumes:
+      # Bind-mount the local prisma directory. This ensures the SQLite database dev.db
+      # resides on the host machine and is persisted between container restarts.
+      - ./prisma:/app/prisma
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped

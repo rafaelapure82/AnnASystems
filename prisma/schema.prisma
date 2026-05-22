@@ -1,0 +1,125 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Incident {
+  id           Int        @id @default(autoincrement())
+  patientName  String?
+  status       String     // "PENDING", "DISPATCHED", "RESOLVED"
+  address      String
+  latitude     Float
+  longitude    Float
+  severity     String     // "CRITICAL", "SERIOUS", "STABLE"
+  symptoms     String
+  ambulanceId  Int?
+  ambulance    Ambulance? @relation(fields: [ambulanceId], references: [id])
+  hospitalId   Int?
+  hospital     Hospital?  @relation(fields: [hospitalId], references: [id])
+  patientId    Int?
+  patient      Patient?   @relation(fields: [patientId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Patient {
+  id                   Int         @id @default(autoincrement())
+  name                 String
+  age                  Int
+  gender               String
+  bloodType            String?
+  clinicalHistory      String?     // Alergias, pre-existencias, etc.
+  status               String      // "CRITICAL", "SERIOUS", "STABLE", "DISCHARGED"
+  vitalsHeartRate      Int?
+  vitalsBloodPressure  String?
+  vitalsOxygen         Int?
+  vitalsTemperature    Float?
+  examResults          String?     // Resultados de exámenes
+  incidents            Incident[]
+  treatments           Treatment[]
+  followUps            FollowUp[]
+  bed                  Bed?
+  assignedDoctorId     Int?
+  assignedDoctorName   String?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+}
+
+model Treatment {
+  id           Int      @id @default(autoincrement())
+  patientId    Int
+  patient      Patient  @relation(fields: [patientId], references: [id])
+  doctorName   String
+  prescription String   // Indicaciones médicas / Medicamentos
+  status       String   // "PRESCRIBED", "ADMINISTERED", "SUSPENDED"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model FollowUp {
+  id                     Int       @id @default(autoincrement())
+  patientId              Int
+  patient                Patient   @relation(fields: [patientId], references: [id])
+  nurseName              String
+  notes                  String
+  medicationAdministered Boolean   @default(false)
+  administeredAt         DateTime?
+  createdAt              DateTime  @default(now())
+}
+
+model Ambulance {
+  id            Int        @id @default(autoincrement())
+  plate         String     @unique
+  model         String
+  paramedicName String
+  status        String     // "IDLE", "DISPATCHED", "MAINTENANCE"
+  currentLat    Float
+  currentLng    Float
+  incidents     Incident[]
+}
+
+model Hospital {
+  id        Int        @id @default(autoincrement())
+  name      String
+  address   String
+  latitude  Float
+  longitude Float
+  contact   String
+  capacity  Int
+  occupied  Int
+  incidents Incident[]
+  beds      Bed[]
+}
+
+model Bed {
+  id          Int      @id @default(autoincrement())
+  bedNumber   String   // e.g. "Cama-101"
+  roomNumber  String   // e.g. "Trauma Shock"
+  status      String   // "AVAILABLE", "OCCUPIED", "MAINTENANCE"
+  hospitalId  Int
+  hospital    Hospital @relation(fields: [hospitalId], references: [id])
+  patientId   Int?     @unique
+  patient     Patient? @relation(fields: [patientId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  username    String   @unique
+  name        String
+  password    String   @default("123456") // Standard default passcode for the simulator
+  role        String   // "PARAMEDIC", "DOCTOR", "NURSE", "ADMIN"
+  permissions String   // Comma-separated list of individual permissions
+  active      Boolean  @default(true)
+  shiftDays   String?
+  shiftHours  String?
+  shiftNotes  String?
+  photo       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Medical Emergencies",
+  "description": "Sistema moderno de gestión y triaje de emergencias médicas en tiempo real para paramédicos, médicos y enfermeros con geolocalización e integración de IA.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
